@@ -5,16 +5,19 @@ using Random = UnityEngine.Random;
 public class DinosaursManager : MonoBehaviour
 {
     [SerializeField] private int health;
-    [SerializeField] private float speed;
+    [SerializeField] private float speed, idleWait;
+    [SerializeField] private bool isVelociraptor, isTRex;
 
     public int Health
     {
         get => health;
         set
         {
+            if (_invincible) return;
+            
             health = value;
 
-            StopMoveAnimation();
+            StopDinosaurMovement();
             
             _animator.Play(health > 0 ? HitAnimation : DeathAnimation);
         }
@@ -22,13 +25,13 @@ public class DinosaursManager : MonoBehaviour
 
     private Vector2 _groundSize;
 
-    private bool _hasDestination;
+    private bool _hasDestination, _stopDinosaur, _invincible;
 
     private Vector3 _startPosition, _currentDestination;
 
-    private const float DestinationRadius = 0.5f;
+    private const float DestinationRadius = 0.1f;
 
-    private float _timeElapsed;
+    private float _timeElapsed, _waitTimer;
 
     private SpriteRenderer _spriteRenderer;
 
@@ -36,8 +39,6 @@ public class DinosaursManager : MonoBehaviour
 
     private const string RunAnimation = "Run", DeathAnimation = "Death", HitAnimation = "Hit", IdleAnimation = "Idle";
 
-    private bool _stopDinosaur;
-    
     private void Awake()
     {
         _spriteRenderer = GetComponent<SpriteRenderer>();
@@ -80,7 +81,22 @@ public class DinosaursManager : MonoBehaviour
     {
         if(!_hasDestination) return;
 
-        if (Vector3.Distance(transform.position, _currentDestination) < DestinationRadius) _hasDestination = false;
+        if (Vector3.Distance(transform.position, _currentDestination) > DestinationRadius) return;
+        
+        StopDinosaurAnimation();
+            
+        _animator.Play(IdleAnimation);
+        _waitTimer += Time.deltaTime;
+
+        if (_waitTimer < idleWait) return;
+        
+        _waitTimer = 0f;
+
+        StopDinosaurAnimation();
+
+        _animator.Play(RunAnimation);
+
+        _hasDestination = false;
     }
 
     private void GoToDestination()
@@ -93,20 +109,38 @@ public class DinosaursManager : MonoBehaviour
     {
         var distanceX = _currentDestination.x - transform.position.x;
 
-        _spriteRenderer.flipX = !(distanceX > 0);
+        _spriteRenderer.flipX = distanceX < 0;
     }
     
-    private void StopMoveAnimation()
+    private void StopDinosaurMovement()
     {
         _stopDinosaur = true;
         _timeElapsed = 0f;
+        _waitTimer = 0f;
         _hasDestination = false;
-        
+
+        StopDinosaurAnimation();
+    }
+
+    private void StopDinosaurAnimation()
+    {
         _animator.enabled = false;
         _animator.enabled = true;
     }
 
-    [UsedImplicitly]
+    private void OnTriggerEnter2D(Collider2D col)
+    {
+        if (col.transform.CompareTag("Bush") && isVelociraptor) _invincible = true;
+        else if (col.transform.CompareTag("Tree") && (isVelociraptor || isTRex)) _invincible = true;
+    }
+
+    private void OnTriggerExit2D(Collider2D col)
+    {
+        if (col.transform.CompareTag("Bush") && isVelociraptor) _invincible = false;
+        else if (col.transform.CompareTag("Tree") && (isVelociraptor || isTRex)) _invincible = false;
+    }
+
+    [UsedImplicitly] 
     public void StartMoveAnimation()
     {
         _stopDinosaur = false;
