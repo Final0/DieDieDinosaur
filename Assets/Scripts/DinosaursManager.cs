@@ -13,7 +13,7 @@ public class DinosaursManager : MonoBehaviour
         get => health;
         set
         {
-            if (_invincible) return;
+            if (_invincible && value == 3) return;
             
             health = value;
 
@@ -47,7 +47,7 @@ public class DinosaursManager : MonoBehaviour
         _groundSize = new Vector2(8, 4);
 
         _startPosition = transform.position;
-        _currentDestination = Vector3.zero;
+        _currentDestination = new Vector3(0, 0, transform.position.z);
         
         _animator.Play(RunAnimation);
     }
@@ -70,7 +70,7 @@ public class DinosaursManager : MonoBehaviour
         var y = Random.Range(-_groundSize.y, _groundSize.y);
 
         _startPosition = transform.position;
-        _currentDestination = new Vector3(x, y, -0.01f);
+        _currentDestination = new Vector3(x, y, transform.position.z);
 
         _timeElapsed = 0f;
         
