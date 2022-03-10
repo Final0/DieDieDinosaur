@@ -8,12 +8,25 @@ public class DinosaursManager : MonoBehaviour
     [SerializeField] private float speed, idleWait;
     [SerializeField] private bool isVelociraptor, isTRex;
 
-    public int Health
+    public int Damage
     {
         get => health;
         set
         {
-            if (_invincible && value == 3) return;
+            health = value;
+
+            StopDinosaurMovement();
+            
+            _animator.Play(health > 0 ? HitAnimation : DeathAnimation);
+        }
+    }
+
+    public int DamageMeteor
+    {
+        get => health;
+        set
+        {
+            if (_invincible) return;
             
             health = value;
 

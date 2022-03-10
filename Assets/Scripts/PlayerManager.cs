@@ -97,11 +97,11 @@ public class PlayerManager : MonoBehaviour
         var mousePosition = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
         var hit = Physics2D.Raycast(mousePosition, Vector2.zero);
 
-        var mousePosition2D = new Vector3(mousePosition.x, mousePosition.y, -0.1f);
+        var mousePosition2D = new Vector3(mousePosition.x, mousePosition.y, -6f);
         Instantiate(impact, mousePosition2D, quaternion.identity);
 
         if (hit.transform.CompareTag(DinosaurTag))
-            hit.transform.GetComponent<DinosaursManager>().Health -= impactDamage;
+            hit.transform.GetComponent<DinosaursManager>().Damage -= impactDamage;
     }
     
     private void MeteorAttack()
@@ -109,13 +109,13 @@ public class PlayerManager : MonoBehaviour
         var mousePosition = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
         var hits = Physics2D.CircleCastAll(mousePosition, meteorRadius, Vector2.zero);
         
-        var mousePosition2D = new Vector3(mousePosition.x, mousePosition.y, -0.1f);
+        var mousePosition2D = new Vector3(mousePosition.x, mousePosition.y, -6f);
         Instantiate(meteor, mousePosition2D, quaternion.identity);
 
         foreach (var hit in hits)
         {
             if (hit.transform.CompareTag(DinosaurTag))
-                hit.transform.GetComponent<DinosaursManager>().Health -= meteorDamage;
+                hit.transform.GetComponent<DinosaursManager>().DamageMeteor -= meteorDamage;
         }
     }
     
@@ -124,11 +124,11 @@ public class PlayerManager : MonoBehaviour
         var mousePosition = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
         var hit = Physics2D.Raycast(mousePosition, Vector2.zero);
 
-        var mousePosition2D = new Vector3(mousePosition.x, mousePosition.y, -0.1f);
+        var mousePosition2D = new Vector3(mousePosition.x, mousePosition.y, -6f);
         Instantiate(fire, mousePosition2D, quaternion.identity);
         
         if (hit.transform.CompareTag(DinosaurTag))
-            hit.transform.GetComponent<DinosaursManager>().Health -= fireDamage;
+            hit.transform.GetComponent<DinosaursManager>().Damage -= fireDamage;
     }
     #endregion
 
