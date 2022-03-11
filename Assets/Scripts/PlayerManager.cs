@@ -1,10 +1,12 @@
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerManager : MonoBehaviour
 {
-    [SerializeField] private float meteorRadius;
-    [SerializeField] private float meteorDelay;
+    [SerializeField] private float meteorRadius, meteorDelay;
+
+    [SerializeField] private Image meteorImage;
 
     [Header("Particles Effects")]
     [SerializeField] private GameObject impact;
@@ -17,9 +19,9 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private int fireDamage;
     
     [Header("Attacks Cooldown")]
-    [SerializeField] private float meteorCooldown;
-    [SerializeField] private float fireCooldown;
-    
+    public float meteorCooldown;
+    public float fireCooldown;
+
     private Camera _mainCamera;
 
     private const string DinosaurTag = "Dinosaur";
@@ -41,6 +43,8 @@ public class PlayerManager : MonoBehaviour
 
     private void Update()
     {
+        if (UIManager.GameFinished || !UIManager.GameStarted) return;
+        
         DetectMouseClick();
         ChooseAttack();
         MeteorCooldown();
@@ -55,12 +59,15 @@ public class PlayerManager : MonoBehaviour
             else if (_selectedAttack == PlayerActions.Meteor && _canMeteor)
             {
                 _canMeteor = false;
+                meteorImage.fillAmount = 0f;
+                
                 Invoke(nameof(MeteorAttack), meteorDelay);
             }
         }
         else if (Input.GetMouseButton(0) && _selectedAttack == PlayerActions.Fire && _canFire)
         {
             _canFire = false;
+
             FireAttack();
         }
     }
