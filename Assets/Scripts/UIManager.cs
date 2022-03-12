@@ -21,6 +21,29 @@ public class UIManager : MonoBehaviour
     private PlayerManager _playerManager;
 
     private float _timer;
+    
+    #region MenusButtons
+    public void Play()
+    {
+        GameStarted = true;
+        mainMenu.SetActive(false);
+        inGameMenu.SetActive(true);
+    }
+
+    public void Quit() => Application.Quit();
+
+    public void HowToPlay()
+    {
+        mainMenu.SetActive(false);
+        howToPlayMenu.SetActive(true);
+    }
+
+    public void Return()
+    {
+        mainMenu.SetActive(true);
+        howToPlayMenu.SetActive(false);
+    }
+    #endregion
 
     private void Awake()
     {
@@ -53,27 +76,4 @@ public class UIManager : MonoBehaviour
     }
 
     private void MeteorCooldown() => meteorImage.fillAmount += 1 / _playerManager.meteorCooldown * Time.deltaTime;
-
-    #region MenusButtons
-    public void Play()
-    {
-        GameStarted = true;
-        mainMenu.SetActive(false);
-        inGameMenu.SetActive(true);
-    }
-
-    public void Quit() => Application.Quit();
-
-    public void HowToPlay()
-    {
-        mainMenu.SetActive(false);
-        howToPlayMenu.SetActive(true);
-    }
-
-    public void Return()
-    {
-        mainMenu.SetActive(true);
-        howToPlayMenu.SetActive(false);
-    }
-    #endregion
 }

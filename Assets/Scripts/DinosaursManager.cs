@@ -8,33 +8,11 @@ public class DinosaursManager : MonoBehaviour
     [SerializeField] private float speed, idleWait;
     [SerializeField] private bool isVelociraptor, isTRex;
 
-    public int Damage
-    {
-        get => health;
-        set
-        {
-            health = value;
+    [SerializeField] private AudioClip death;
 
-            StopDinosaurMovement();
-            
-            _animator.Play(health > 0 ? HitAnimation : DeathAnimation);
-        }
-    }
+    private AudioSource _audio;
 
-    public int DamageMeteor
-    {
-        get => health;
-        set
-        {
-            if (_invincible) return;
-            
-            health = value;
-
-            StopDinosaurMovement();
-            
-            _animator.Play(health > 0 ? HitAnimation : DeathAnimation);
-        }
-    }
+    private bool _isDead;
 
     private Vector2 _groundSize;
 
@@ -51,9 +29,45 @@ public class DinosaursManager : MonoBehaviour
     private Animator _animator;
 
     private const string RunAnimation = "Run", DeathAnimation = "Death", HitAnimation = "Hit", IdleAnimation = "Idle";
+    
+    public int Damage
+    {
+        get => health;
+        set
+        {
+            if (_isDead) return;
+            
+            health = value;
 
+            TakeDamage();
+        }
+    }
+
+    public int DamageMeteor
+    {
+        get => health;
+        set
+        {
+            if (_invincible || _isDead) return;
+            
+            health = value;
+
+            TakeDamage();
+        }
+    }
+
+    [UsedImplicitly] 
+    public void StartMoveAnimation()
+    {
+        _stopDinosaur = false;
+        _animator.Play(RunAnimation);
+    }
+
+    [UsedImplicitly] public void DestroyGameObject() => Destroy(gameObject);
+    
     private void Awake()
     {
+        _audio = GetComponent<AudioSource>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
         _animator = GetComponent<Animator>();
         
@@ -125,6 +139,27 @@ public class DinosaursManager : MonoBehaviour
         _spriteRenderer.flipX = distanceX < 0;
     }
     
+    private void TakeDamage()
+    {
+        StopDinosaurMovement();
+            
+        if (health > 0)
+        {
+            _audio.Play();
+                
+            _animator.Play(HitAnimation);
+        }
+        else
+        {
+            _isDead = true;
+                
+            _audio.clip = death;
+            _audio.Play();
+                
+            _animator.Play(DeathAnimation);
+        }
+    }
+    
     private void StopDinosaurMovement()
     {
         _stopDinosaur = true;
@@ -152,13 +187,4 @@ public class DinosaursManager : MonoBehaviour
         if (col.transform.CompareTag("Bush") && isVelociraptor) _invincible = false;
         else if (col.transform.CompareTag("Tree") && (isVelociraptor || isTRex)) _invincible = false;
     }
-
-    [UsedImplicitly] 
-    public void StartMoveAnimation()
-    {
-        _stopDinosaur = false;
-        _animator.Play(RunAnimation);
-    }
-
-    [UsedImplicitly] public void DestroyGameObject() => Destroy(gameObject);
 }

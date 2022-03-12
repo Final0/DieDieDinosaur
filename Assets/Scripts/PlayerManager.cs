@@ -21,6 +21,10 @@ public class PlayerManager : MonoBehaviour
     [Header("Attacks Cooldown")]
     public float meteorCooldown;
     public float fireCooldown;
+    
+    [Header("Sounds")]
+    [SerializeField] private AudioSource meteorAudioSource;
+    [SerializeField] private AudioSource flameAudioSource;
 
     private Camera _mainCamera;
 
@@ -29,13 +33,10 @@ public class PlayerManager : MonoBehaviour
     private float _meteorCooldownTimer, _fireCooldownTimer;
 
     private bool _canMeteor = true, _canFire = true;
+    
+    private Vector3 _mousePosition;
 
-    private enum PlayerActions
-    {
-        Basic,
-        Meteor,
-        Fire
-    }
+    private enum PlayerActions { Basic, Meteor, Fire }
 
     private PlayerActions _selectedAttack = PlayerActions.Basic;
     
@@ -47,20 +48,25 @@ public class PlayerManager : MonoBehaviour
         
         DetectMouseClick();
         ChooseAttack();
-        MeteorCooldown();
-        FireCooldown();
+        
+        Cooldown(ref _canMeteor ,ref _meteorCooldownTimer, meteorCooldown);
+        Cooldown(ref _canFire ,ref _fireCooldownTimer, fireCooldown);
     }
 
     private void DetectMouseClick()
     {
         if (Input.GetMouseButtonDown(0))
         {
-            if (_selectedAttack == PlayerActions.Basic) BasicAttack();
+            if (_selectedAttack == PlayerActions.Basic)
+                Attack(impact, impactDamage);
             else if (_selectedAttack == PlayerActions.Meteor && _canMeteor)
             {
                 _canMeteor = false;
                 meteorImage.fillAmount = 0f;
                 
+                meteorAudioSource.Play();
+                
+                _mousePosition = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
                 Invoke(nameof(MeteorAttack), meteorDelay);
             }
         }
@@ -68,84 +74,61 @@ public class PlayerManager : MonoBehaviour
         {
             _canFire = false;
 
-            FireAttack();
+            if(!flameAudioSource.isPlaying)
+                flameAudioSource.Play();
+            
+            Attack(fire, fireDamage);
+        }
+        else if(_canFire)
+        {
+            flameAudioSource.Stop();
         }
     }
-
-    #region Cooldowns
-    private void MeteorCooldown()
-    {
-        if(_canMeteor) return;
-
-        _meteorCooldownTimer += Time.deltaTime;
-        
-        if(meteorCooldown > _meteorCooldownTimer) return;
-
-        _meteorCooldownTimer = 0f;
-        _canMeteor = true;
-    }
     
-    private void FireCooldown()
+    private static void Cooldown(ref bool canAttack,ref float attackCooldownTimer, float attackCooldown)
     {
-        if (_canFire) return;
+        if (canAttack) return;
         
-        _fireCooldownTimer += Time.deltaTime;
+        attackCooldownTimer += Time.deltaTime;
 
-        if (_fireCooldownTimer < fireCooldown) return;
+        if (attackCooldownTimer < attackCooldown) return;
         
-        _fireCooldownTimer = 0f;
-        _canFire = true;
+        attackCooldownTimer = 0f;
+        canAttack = true;
     }
-    #endregion
-    
+
     #region Attacks
-    private void BasicAttack()
+    private void Attack(GameObject effect, int damage)
     {
         var mousePosition = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
         var hit = Physics2D.Raycast(mousePosition, Vector2.zero);
 
         var mousePosition2D = new Vector3(mousePosition.x, mousePosition.y, -6f);
-        Instantiate(impact, mousePosition2D, quaternion.identity);
-
+        Instantiate(effect, mousePosition2D, quaternion.identity);
+        
         if (hit.transform.CompareTag(DinosaurTag))
-            hit.transform.GetComponent<DinosaursManager>().Damage -= impactDamage;
+            hit.transform.GetComponent<DinosaursManager>().Damage -= damage;
     }
     
     private void MeteorAttack()
     {
-        var mousePosition = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
-        var hits = Physics2D.CircleCastAll(mousePosition, meteorRadius, Vector2.zero);
+        var hits = Physics2D.CircleCastAll(_mousePosition, meteorRadius, Vector2.zero);
         
-        var mousePosition2D = new Vector3(mousePosition.x, mousePosition.y, -6f);
+        var mousePosition2D = new Vector3(_mousePosition.x, _mousePosition.y, -6f);
         Instantiate(meteor, mousePosition2D, quaternion.identity);
 
         foreach (var hit in hits)
         {
-            if (hit.transform.CompareTag(DinosaurTag))
+            if (hit.transform.CompareTag(DinosaurTag)) 
                 hit.transform.GetComponent<DinosaursManager>().DamageMeteor -= meteorDamage;
         }
-    }
-    
-    private void FireAttack()
-    {
-        var mousePosition = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
-        var hit = Physics2D.Raycast(mousePosition, Vector2.zero);
-
-        var mousePosition2D = new Vector3(mousePosition.x, mousePosition.y, -6f);
-        Instantiate(fire, mousePosition2D, quaternion.identity);
-        
-        if (hit.transform.CompareTag(DinosaurTag))
-            hit.transform.GetComponent<DinosaursManager>().Damage -= fireDamage;
     }
     #endregion
 
     private void ChooseAttack()
     {
-        if(Input.GetKeyDown(KeyCode.A))
-            _selectedAttack = PlayerActions.Basic;
-        else if (Input.GetKeyDown(KeyCode.Z))
-            _selectedAttack = PlayerActions.Meteor;
-        else if (Input.GetKeyDown(KeyCode.E))
-            _selectedAttack = PlayerActions.Fire;
+        if(Input.GetKeyDown(KeyCode.A)) _selectedAttack = PlayerActions.Basic;
+        else if (Input.GetKeyDown(KeyCode.Z)) _selectedAttack = PlayerActions.Meteor;
+        else if (Input.GetKeyDown(KeyCode.E)) _selectedAttack = PlayerActions.Fire;
     }
 }
