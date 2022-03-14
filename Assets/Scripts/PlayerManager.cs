@@ -1,6 +1,8 @@
+using System.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 public class PlayerManager : MonoBehaviour
 {
@@ -25,6 +27,10 @@ public class PlayerManager : MonoBehaviour
     [Header("Sounds")]
     [SerializeField] private AudioSource meteorAudioSource;
     [SerializeField] private AudioSource flameAudioSource;
+
+    [Header("Camera Shake")] 
+    [SerializeField] private AnimationCurve curve;
+    [SerializeField] private float duration;
 
     private Camera _mainCamera;
 
@@ -112,6 +118,8 @@ public class PlayerManager : MonoBehaviour
     
     private void MeteorAttack()
     {
+        StartCoroutine(ShakingEffect());
+        
         var hits = Physics2D.CircleCastAll(_mousePosition, meteorRadius, Vector2.zero);
         
         var mousePosition2D = new Vector3(_mousePosition.x, _mousePosition.y, -6f);
@@ -130,5 +138,23 @@ public class PlayerManager : MonoBehaviour
         if(Input.GetKeyDown(KeyCode.A)) _selectedAttack = PlayerActions.Basic;
         else if (Input.GetKeyDown(KeyCode.Z)) _selectedAttack = PlayerActions.Meteor;
         else if (Input.GetKeyDown(KeyCode.E)) _selectedAttack = PlayerActions.Fire;
+    }
+
+    private IEnumerator ShakingEffect()
+    {
+        Debug.Log("baguette");
+        var startPosition = transform.position;
+        var elapsedTime = 0f;
+
+        while (elapsedTime < duration)
+        {
+            elapsedTime += Time.deltaTime;
+            var strength = curve.Evaluate(elapsedTime / duration);
+
+            transform.position = startPosition + Random.insideUnitSphere * strength;
+            yield return null;
+        }
+
+        transform.position = startPosition;
     }
 }
