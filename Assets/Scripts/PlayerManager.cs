@@ -32,6 +32,11 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private AnimationCurve curve;
     [SerializeField] private float duration;
 
+    [Header("Selected Attack Images")] 
+    [SerializeField] private GameObject selectedImpactImage;
+    [SerializeField] private GameObject selectedMeteorImage;
+    [SerializeField] private GameObject selectedFireImage;
+
     private Camera _mainCamera;
 
     private const string DinosaurTag = "Dinosaur";
@@ -50,8 +55,12 @@ public class PlayerManager : MonoBehaviour
 
     private void Update()
     {
-        if (UIManager.GameFinished || !UIManager.GameStarted) return;
-        
+        if (UIManager.GameFinished || !UIManager.GameStarted)
+        {
+            flameAudioSource.Stop();
+            return;
+        }
+
         DetectMouseClick();
         ChooseAttack();
         
@@ -135,14 +144,32 @@ public class PlayerManager : MonoBehaviour
 
     private void ChooseAttack()
     {
-        if(Input.GetKeyDown(KeyCode.A)) _selectedAttack = PlayerActions.Basic;
-        else if (Input.GetKeyDown(KeyCode.Z)) _selectedAttack = PlayerActions.Meteor;
-        else if (Input.GetKeyDown(KeyCode.E)) _selectedAttack = PlayerActions.Fire;
+        if(Input.GetKeyDown(KeyCode.A))
+        {
+            _selectedAttack = PlayerActions.Basic;
+            SelectedAttackUI(true, false, false);
+        }
+        else if (Input.GetKeyDown(KeyCode.Z))
+        {
+            _selectedAttack = PlayerActions.Meteor;
+            SelectedAttackUI(false, true, false);
+        }
+        else if (Input.GetKeyDown(KeyCode.E))
+        {
+            _selectedAttack = PlayerActions.Fire;
+            SelectedAttackUI(false, false, true);
+        }
+    }
+
+    private void SelectedAttackUI(bool impactBool, bool meteorBool, bool fireBool)
+    {
+        selectedImpactImage.SetActive(impactBool);
+        selectedMeteorImage.SetActive(meteorBool);
+        selectedFireImage.SetActive(fireBool);
     }
 
     private IEnumerator ShakingEffect()
     {
-        Debug.Log("baguette");
         var startPosition = transform.position;
         var elapsedTime = 0f;
 

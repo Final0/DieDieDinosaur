@@ -1,13 +1,15 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
-    public static bool GameFinished, GameStarted;
+    public static bool GameFinished, GameStarted, StopSpawn;
     
     [SerializeField] private Image meteorImage;
-    
+    [SerializeField] private Text endText;
+
     [Header("Timer Settings")]
     [SerializeField] private TMP_Text timerText;
     [SerializeField] private Image timerImage;
@@ -17,11 +19,14 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject mainMenu;
     [SerializeField] private GameObject howToPlayMenu;
     [SerializeField] private GameObject inGameMenu;
+    [SerializeField] private GameObject endMenu;
 
     private PlayerManager _playerManager;
 
     private float _timer;
-    
+
+    private const string WinText = "You win !", LooseText = "You loose !";
+
     #region MenusButtons
     public void Play()
     {
@@ -43,6 +48,8 @@ public class UIManager : MonoBehaviour
         mainMenu.SetActive(true);
         howToPlayMenu.SetActive(false);
     }
+
+    public void ReturnMain() => SceneManager.LoadScene(0);
     #endregion
 
     private void Awake()
@@ -67,12 +74,27 @@ public class UIManager : MonoBehaviour
         _timer -= Time.deltaTime;
         timerText.text = _timer.ToString("##.00");
         
-        if (_timer <= 3f) timerText.color = Color.red;
+        if (_timer > 10f) return;
+        
+        timerText.color = Color.red;
+        StopSpawn = true;
 
         if (_timer > 0f) return;
 
         timerText.text = "0";
         GameFinished = true;
+        
+        DisplayEndMenu();
+    }
+
+    private void DisplayEndMenu()
+    {
+        mainMenu.SetActive(false);
+        howToPlayMenu.SetActive(false);
+        inGameMenu.SetActive(false);
+        endMenu.SetActive(true);
+
+        endText.text = transform.childCount > 0 ? LooseText : WinText;
     }
 
     private void MeteorCooldown() => meteorImage.fillAmount += 1 / _playerManager.meteorCooldown * Time.deltaTime;
