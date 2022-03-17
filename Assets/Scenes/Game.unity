@@ -2127,7 +2127,7 @@ MonoBehaviour:
   - {fileID: 740546553}
   - {fileID: 978649235}
   - {fileID: 808739112}
-  spawnTime: 3.5
+  spawnTime: 2
 --- !u!1 &235350409
 GameObject:
   m_ObjectHideFlags: 0
@@ -13048,7 +13048,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   meteorImage: {fileID: 424276434}
-  endText: {fileID: 0}
+  endText: {fileID: 1382196908}
+  DinosaursParent: {fileID: 219679863}
   timerText: {fileID: 1086570506}
   timerImage: {fileID: 1963113433}
   gameTimer: 60

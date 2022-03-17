@@ -8,7 +8,8 @@ public class UIManager : MonoBehaviour
     public static bool GameFinished, GameStarted, StopSpawn;
     
     [SerializeField] private Image meteorImage;
-    [SerializeField] private Text endText;
+    [SerializeField] private TMP_Text endText;
+    [SerializeField] private GameObject DinosaursParent;
 
     [Header("Timer Settings")]
     [SerializeField] private TMP_Text timerText;
@@ -55,7 +56,10 @@ public class UIManager : MonoBehaviour
     private void Awake()
     {
         _playerManager = FindObjectOfType<PlayerManager>();
-
+        
+        GameStarted = false;
+        GameFinished = false;
+        
         _timer = gameTimer;
     }
 
@@ -74,7 +78,7 @@ public class UIManager : MonoBehaviour
         _timer -= Time.deltaTime;
         timerText.text = _timer.ToString("##.00");
         
-        if (_timer > 10f) return;
+        if (_timer > 5f) return;
         
         timerText.color = Color.red;
         StopSpawn = true;
@@ -94,7 +98,7 @@ public class UIManager : MonoBehaviour
         inGameMenu.SetActive(false);
         endMenu.SetActive(true);
 
-        endText.text = transform.childCount > 0 ? LooseText : WinText;
+        endText.text = DinosaursParent.transform.childCount > 0 ? LooseText : WinText;
     }
 
     private void MeteorCooldown() => meteorImage.fillAmount += 1 / _playerManager.meteorCooldown * Time.deltaTime;
